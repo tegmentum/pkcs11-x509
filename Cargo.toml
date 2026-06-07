@@ -1,0 +1,7 @@
+[workspace]
+resolver = "2"
+members = ["x509-path"]
+
+# The wasm component wrapper (x509-path-component) is built separately with the
+# wasm toolchain; it is intentionally not a default workspace member so a plain
+# `cargo test` on the native core needs no wasm target.

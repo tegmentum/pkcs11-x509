@@ -1,0 +1,24 @@
+[package]
+name = "x509-path-component"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+publish = false
+description = "WASM Component wrapper around x509-path: exports tegmentum:x509-path/validation. Build with the wasm32-wasip2 target / cargo-component."
+
+# Intentionally NOT a member of the root workspace: building this needs the
+# wasm toolchain. Build explicitly, e.g.:
+#   cargo build --release --target wasm32-wasip2 --manifest-path x509-path-component/Cargo.toml
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+x509-path = { path = "../x509-path" }
+wit-bindgen = { version = "0.44", default-features = false, features = ["macros"] }
+wit-bindgen-rt = { version = "0.44" }
+
+[profile.release]
+codegen-units = 1
+opt-level = "s"
+strip = true
+lto = true

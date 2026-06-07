@@ -1,0 +1,19 @@
+[package]
+name = "x509-path"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "X.509 certificate path (chain-to-anchor) validation with a pluggable signature-verify backend (native or PKCS#11). Pure-Rust, wasm-friendly."
+repository = "https://github.com/tegmentum/pkcs11-x509"
+
+[dependencies]
+x509-cert = { version = "0.2", default-features = false, features = ["pem"] }
+# `x509` enables the &Certificate verification impls; the rest cover the
+# signature algorithms real certs (and rcgen test certs) use.
+x509-verify = { version = "0.4", default-features = false, features = ["x509", "rsa", "ecdsa", "p256", "p384", "ed25519", "sha2", "std"] }
+der = "0.7"
+const-oid = "0.9"
+sha2 = "0.10"
+
+[dev-dependencies]
+rcgen = "0.13"

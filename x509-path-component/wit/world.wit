@@ -1,0 +1,54 @@
+package tegmentum:x509-path@0.1.0;
+
+/// X.509 certificate path validation — the policy layer above PKCS#11. A
+/// consumer presents a leaf certificate (and any intermediates), a set of
+/// trusted anchors (the `db`), and a revocation set (the `dbx`); the component
+/// returns whether the leaf chains to a trusted anchor.
+///
+/// The per-link signature check is performed inside the component (native
+/// crypto). A future revision may import `tegmentum:key-backend`'s `verify`
+/// so the signature step can run on an HSM-resident verify primitive — the
+/// native core already exposes that seam (`CertVerifier`).
+interface validation {
+    /// A DER-encoded X.509 certificate.
+    type cert-der = list<u8>;
+
+    /// The outcome of validating a leaf's path.
+    variant outcome {
+        /// Validated: the anchoring CA's subject DN and the chain length.
+        valid(validated),
+        /// Rejected, with a machine-readable reason.
+        rejected(reason),
+    }
+
+    record validated {
+        subject: string,
+        anchor-subject: string,
+        chain-len: u32,
+    }
+
+    enum reason {
+        parse,
+        revoked,
+        expired,
+        no-issuer,
+        bad-signature,
+        chain-too-long,
+        not-a-ca,
+    }
+
+    /// Validate `leaf` to a trusted anchor in `anchors`, drawing CAs from
+    /// `intermediates`, honouring `revoked` (dbx) and checking validity at
+    /// `now-unix` (unix seconds; the caller supplies time for determinism).
+    validate: func(
+        leaf: cert-der,
+        intermediates: list<cert-der>,
+        anchors: list<cert-der>,
+        revoked: list<cert-der>,
+        now-unix: u64,
+    ) -> outcome;
+}
+
+world x509-path {
+    export validation;
+}
