@@ -73,7 +73,10 @@ impl Cert {
     /// Parse a certificate from DER.
     pub fn from_der(der: &[u8]) -> Result<Self, PathError> {
         let inner = Certificate::from_der(der).map_err(|e| PathError::Parse(e.to_string()))?;
-        Ok(Cert { inner, der: der.to_vec() })
+        Ok(Cert {
+            inner,
+            der: der.to_vec(),
+        })
     }
 
     /// The underlying parsed certificate.
@@ -175,12 +178,14 @@ impl TrustStore {
         Ok(s)
     }
     fn anchor_for<'b>(&'b self, cert: &Cert, verifier: &dyn CertVerifier) -> Option<&'b Cert> {
-        self.anchors.iter().find(|a| {
-            a.subject_dn() == cert.issuer_dn() && verifier.verify_signed_by(cert, a)
-        })
+        self.anchors
+            .iter()
+            .find(|a| a.subject_dn() == cert.issuer_dn() && verifier.verify_signed_by(cert, a))
     }
     fn is_anchor(&self, cert: &Cert) -> bool {
-        self.anchors.iter().any(|a| a.fingerprint() == cert.fingerprint())
+        self.anchors
+            .iter()
+            .any(|a| a.fingerprint() == cert.fingerprint())
     }
 }
 

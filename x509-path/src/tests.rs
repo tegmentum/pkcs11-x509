@@ -54,7 +54,15 @@ fn valid_leaf_chains_to_anchor() {
     let store = TrustStore::from_ders([der_of(&root.cert).as_slice()]).unwrap();
     let leaf_c = Cert::from_der(&der_of(&leaf.cert)).unwrap();
 
-    let v = validate_chain(&leaf_c, &[], &store, &Revocations::empty(), NOW, &NativeVerifier).unwrap();
+    let v = validate_chain(
+        &leaf_c,
+        &[],
+        &store,
+        &Revocations::empty(),
+        NOW,
+        &NativeVerifier,
+    )
+    .unwrap();
     assert!(v.anchor_subject.contains("Root CA"));
     assert_eq!(v.chain_len, 1);
 }
@@ -67,8 +75,15 @@ fn leaf_signed_by_untrusted_ca_is_rejected() {
     let store = TrustStore::from_ders([der_of(&real.cert).as_slice()]).unwrap();
     let leaf_c = Cert::from_der(&der_of(&leaf.cert)).unwrap();
 
-    let err = validate_chain(&leaf_c, &[], &store, &Revocations::empty(), NOW, &NativeVerifier)
-        .unwrap_err();
+    let err = validate_chain(
+        &leaf_c,
+        &[],
+        &store,
+        &Revocations::empty(),
+        NOW,
+        &NativeVerifier,
+    )
+    .unwrap_err();
     assert_eq!(err, PathError::NoIssuer);
 }
 
@@ -80,8 +95,15 @@ fn expired_leaf_is_rejected() {
     let store = TrustStore::from_ders([der_of(&root.cert).as_slice()]).unwrap();
     let leaf_c = Cert::from_der(&der_of(&leaf.cert)).unwrap();
 
-    let err = validate_chain(&leaf_c, &[], &store, &Revocations::empty(), NOW, &NativeVerifier)
-        .unwrap_err();
+    let err = validate_chain(
+        &leaf_c,
+        &[],
+        &store,
+        &Revocations::empty(),
+        NOW,
+        &NativeVerifier,
+    )
+    .unwrap_err();
     assert_eq!(err, PathError::Expired);
 }
 
@@ -109,8 +131,15 @@ fn three_link_chain_through_an_intermediate() {
     let inter_c = Cert::from_der(&der_of(&inter.cert)).unwrap();
     let leaf_c = Cert::from_der(&der_of(&leaf.cert)).unwrap();
 
-    let v = validate_chain(&leaf_c, &[inter_c], &store, &Revocations::empty(), NOW, &NativeVerifier)
-        .unwrap();
+    let v = validate_chain(
+        &leaf_c,
+        &[inter_c],
+        &store,
+        &Revocations::empty(),
+        NOW,
+        &NativeVerifier,
+    )
+    .unwrap();
     assert!(v.anchor_subject.contains("Root CA"));
     assert_eq!(v.chain_len, 2);
 }
@@ -137,7 +166,15 @@ fn a_directly_anchored_cert_validates() {
     let root = ca("Pinned CA");
     let store = TrustStore::from_ders([der_of(&root.cert).as_slice()]).unwrap();
     let self_c = Cert::from_der(&der_of(&root.cert)).unwrap();
-    let v = validate_chain(&self_c, &[], &store, &Revocations::empty(), NOW, &NativeVerifier).unwrap();
+    let v = validate_chain(
+        &self_c,
+        &[],
+        &store,
+        &Revocations::empty(),
+        NOW,
+        &NativeVerifier,
+    )
+    .unwrap();
     assert_eq!(v.chain_len, 0);
 }
 
@@ -146,6 +183,7 @@ fn untrusted_self_signed_is_rejected() {
     let rogue = ca("Rogue Root");
     let store = TrustStore::new(); // trust nothing
     let c = Cert::from_der(&der_of(&rogue.cert)).unwrap();
-    let err = validate_chain(&c, &[], &store, &Revocations::empty(), NOW, &NativeVerifier).unwrap_err();
+    let err =
+        validate_chain(&c, &[], &store, &Revocations::empty(), NOW, &NativeVerifier).unwrap_err();
     assert_eq!(err, PathError::NoIssuer);
 }
